@@ -1,18 +1,54 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <!-- Load pyodide.js from CDN -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game (Pyodide)</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { border: 2px solid black; }
+    </style>
 </head>
 <body>
-  <script type="text/javascript">
-    // Initialize Pyodide. The loadPyodide function is now available.
-    async function main() {
-      let pyodide = await loadPyodide();
-      // Pyodide is now ready. runPython() is now available.
-      console.log(pyodide.runPython("1 + 2"));
-    }
-    main();
-  </script>
+    <h1>Snake Game (Pyodide)</h1>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <script type="text/javascript">
+        let snake = [], food = [];
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        async function main() {
+            window.pyodide = await loadPyodide();
+            await pyodide.loadPackagesFromImports();
+            let response = await fetch("snake.py"); // Load snake.py
+            let code = await response.text();
+            await pyodide.runPythonAsync(code); // Run snake.py
+        }
+        main();
+
+        function update_canvas(new_snake, new_food) {
+            snake = new_snake;
+            food = new_food;
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "red";
+            ctx.fillRect(food[0], food[1], 10, 10);
+            ctx.fillStyle = "green";
+            snake.forEach(([x, y]) => ctx.fillRect(x, y, 10, 10));
+        }
+
+        document.addEventListener("keydown", (event) => {
+            const keyMap = { "ArrowLeft": "LEFT", "ArrowRight": "RIGHT", "ArrowUp": "UP", "ArrowDown": "DOWN" };
+            if (keyMap[event.key]) {
+                pyodide.runPythonAsync(`set_direction('${keyMap[event.key]}')`);
+            }
+        });
+
+        setInterval(() => pyodide.runPythonAsync("update()"), 100);
+    </script>
 </body>
 </html>
