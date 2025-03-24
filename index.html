@@ -20,7 +20,8 @@
 
         async function main() {
             window.pyodide = await loadPyodide();
-            await pyodide.runPythonAsync(await (await fetch("snake.py")).text());
+            await pyodide.runPythonAsync(await (await fetch("scripts/snake.py")).text());
+
         }
         main();
 
